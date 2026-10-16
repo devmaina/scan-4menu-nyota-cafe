@@ -1,1 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NyotaNdogo Cafe - Interactive Menu</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
 
+        /* Solid, vibrant warm orange gradient backdrop without complex animated keyframes */
+        .static-orange-bg {
+            background: linear-gradient(135deg, #8B0000 0%, #D2691E 35%, #E65100 70%, #FF8C00 100%);
+            background-attachment: fixed;
+        }
+
+        /* Glassmorphism utility */
+        .glass {
+            background: rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .glass-dark {
+            background: rgba(25, 10, 5, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        /* Portrait A4 Aspect Ratio Box */
+        .aspect-a4 {
+            aspect-ratio: 1 / 1.414;
+        }
+
+        /* Hide scrollbars */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Card transition settings */
+        .carousel-container {
+            perspective: 1000px;
+        }
+
+        .menu-card {
+            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+    </style>
+</head>
+
+<body class="static-orange-bg min-h-screen text-white overflow-x-hidden flex flex-col justify-between relative">
+    
+    <header class="sticky top-0 z-40 w-full p-4">
+        <div class="max-w-md mx-auto glass rounded-2xl px-5 py-3 flex items-center justify-between shadow-2xl">
+            <!-- Brand Logo Image (logo.png) with fallback -->
+            <div class="flex items-center space-x-2.5">
+                <div class="w-10 h-10 rounded-xl bg-amber-400/20 p-1 flex items-center justify-center border border-amber-300/30 overflow-hidden shadow-inner">
+                    <img src="logo.png" alt="NyotaNdogo Logo" class="w-full h-full object-contain rounded-lg" onerror="this.onerror=null; this.parentNode.innerHTML='✨';">
+                </div>
+                <span class="font-black text-xl tracking-wider text-amber-100 uppercase drop-shadow-md">NyotaNdogo</span>
+            </div>
+
+            <!-- Header Actions -->
+            <div class="flex items-center gap-3">
+                <!-- Cart Trigger Badge -->
+                <button onclick="toggleCartModal()" class="relative p-2 bg-white/20 hover:bg-white/30 rounded-xl transition flex items-center justify-center">
+                    <i class="fa-solid fa-utensils text-amber-300 text-lg"></i>
+                    <span id="cart-count" class="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-md border-2 border-amber-400 hidden">0</span>
+                </button>
+
+                <!-- Hamburger Button -->
+                <button id="menu-btn" onclick="toggleDrawer()" class="p-2 bg-white/20 hover:bg-white/30 rounded-xl transition focus:outline-none">
+                    <i class="fa-solid fa-bars-staggered text-xl text-white"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Drawer Overlay -->
+    <div id="drawer-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 opacity-0 pointer-events-none transition-opacity duration-300" onclick="toggleDrawer()"></div>
+    
+    <!-- Navigation Drawer Sidebar -->
+    <aside id="drawer" class="fixed top-0 right-0 w-72 h-full glass-dark z-50 transform translate-x-full transition-transform duration-300 ease-in-out p-6 flex flex-col justify-between shadow-2xl">
+        <div>
+            <div class="flex justify-between items-center mb-8 border-b border-white/10 pb-4">
+                <h3 class="text-xl font-bold text-amber-300">NyotaNdogo Cafe</h3>
+                <button onclick="toggleDrawer()" class="text-white/70 hover:text-white text-2xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <nav class="space-y-4">
+                <a href="#menu" onclick="toggleDrawer()" class="flex items-center gap-3 text-lg font-medium p-3 rounded-xl bg-white/10 hover:bg-amber-500/30 transition text-amber-100">
+                    <i class="fa-solid fa-book-open text-amber-400"></i> Menu Showcase
+                </a>
+                <a href="javascript:void(0)" onclick="toggleDrawer(); showInfoModal('about')" class="flex items-center gap-3 text-lg font-medium p-3 rounded-xl hover:bg-white/10 transition text-white/90">
+                    <i class="fa-solid fa-circle-info text-amber-400"></i> About Us
+                </a>
+                <a href="javascript:void(0)" onclick="toggleDrawer(); showInfoModal('contact')" class="flex items-center gap-3 text-lg font-medium p-3 rounded-xl hover:bg-white/10 transition text-white/90">
+                    <i class="fa-solid fa-phone text-amber-400"></i> Contact & Hours
+                </a>
+            </nav>
+        </div>
+
+        <div class="text-center text-xs text-white/50 border-t border-white/10 pt-4">
+            <p>© NyotaNdogo Cafe</p>
+            <p class="mt-1">Fresh & Hot Meals Daily</p>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col justify-center items-center px-4 my-2 max-w-md mx-auto w-full z-10">
+        
+        <!-- Header Pill Indicator -->
+        <div class="w-full flex justify-center py-1 mb-2">
+            <span class="px-5 py-1.5 rounded-full text-xs font-black tracking-widest uppercase bg-black/30 backdrop-blur-md text-amber-300 border border-amber-400/30 shadow-lg">
+                ✨ Digital Menu Showcase ✨
+            </span>
+        </div>
+
+        <!-- Carousel Wrapper -->
+        <div class="relative w-full carousel-container my-auto flex flex-col items-center">
+            
+            <!-- Cards Track / Display -->
+            <div id="carousel-track" class="w-full flex justify-center items-center relative min-h-[460px]">
+                <!-- Dynamic cards populated via JavaScript (1.jpg to 27.jpg) -->
+            </div>
+
+            <!-- Navigation Controls -->
+            <div class="flex items-center justify-between w-full px-4 mt-4">
+                <button onclick="prevSlide()" class="w-12 h-12 rounded-full glass flex items-center justify-center text-white hover:bg-white/30 active:scale-95 transition shadow-lg">
+                    <i class="fa-solid fa-chevron-left text-lg"></i>
+                </button>
+
+                <!-- Indicator Pill -->
+                <div class="glass px-4 py-1.5 rounded-full text-xs font-extrabold tracking-widest text-amber-200">
+                    <span id="current-index">1</span> / <span id="total-count">27</span>
+                </div>
+
+                <button onclick="nextSlide()" class="w-12 h-12 rounded-full glass flex items-center justify-center text-white hover:bg-white/30 active:scale-95 transition shadow-lg">
+                    <i class="fa-solid fa-chevron-right text-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Order Button Action Bar with Dark Brick Red Gradient -->
+        <div class="w-full mt-5 mb-2">
+            <button id="order-btn" onclick="addCurrentToCart()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-red-950 via-red-900 to-amber-950 text-amber-300 font-black text-lg tracking-wider uppercase shadow-2xl border border-amber-500/40 hover:border-amber-400 active:scale-95 transition-all duration-300 flex items-center justify-center gap-3">
+                <i class="fa-solid fa-cart-plus text-xl text-amber-400"></i>
+                <span>Add To Order</span>
+            </button>
+        </div>
+    </main>
+
+    <!-- Order Summary & WhatsApp Modal -->
+    <div id="cart-modal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-stone-900 text-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl border border-white/10 flex flex-col max-h-[85vh]">
+            <div class="flex justify-between items-center pb-4 border-b border-white/10">
+                <h3 class="text-xl font-black text-amber-400 flex items-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-2xl text-emerald-400"></i>
+                    Your Advance Order
+                </h3>
+                <button onclick="toggleCartModal()" class="text-white/60 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Cart Items Container -->
+            <div id="cart-items-container" class="flex-1 overflow-y-auto py-4 space-y-3 no-scrollbar my-2">
+                <!-- Items dynamic list -->
+            </div>
+
+            <!-- Customer Details for WhatsApp -->
+            <div class="space-y-3 pt-2 border-t border-white/10">
+                <input type="text" id="cust-name" placeholder="Your Name (Optional)" class="w-full bg-white/5 border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/40 focus:outline-none focus:border-amber-400">
+                <textarea id="cust-note" placeholder="Special Request / Table Number (Optional)" rows="2" class="w-full bg-white/5 border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/40 focus:outline-none focus:border-amber-400"></textarea>
+                
+                <button onclick="sendWhatsAppOrder()" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-stone-950 font-bold rounded-xl flex items-center justify-center gap-2 text-base transition shadow-lg">
+                    <i class="fa-brands fa-whatsapp text-xl"></i>
+                    Send Order via WhatsApp
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Modal (About / Contact) -->
+    <div id="info-modal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="glass-dark text-white w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-white/20 text-center">
+            <div id="info-content"></div>
+            <button onclick="closeInfoModal()" class="mt-6 w-full py-2.5 bg-amber-400 text-red-950 font-bold rounded-xl">Close</button>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed top-20 left-1/2 -translate-x-1/2 glass-dark px-5 py-2.5 rounded-full text-sm font-bold text-amber-300 shadow-2xl border border-amber-400/30 flex items-center gap-2 transform -translate-y-10 opacity-0 transition-all duration-300 pointer-events-none z-50">
+        <i class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toast-msg">Added to order!</span>
+    </div>
+
+    <script>
+        // Array of 27 Items mapping to 1.jpg ... 27.jpg
+        const menuItems = Array.from({ length: 27 }, (_, i) => {
+            const id = i + 1;
+            return {
+                id: id,
+                image: `${id}.jpg`,
+                title: `Special Dish #${id}`
+            };
+        });
+
+        let currentIndex = 0;
+        let cart = [];
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        // Initialize application on load
+        window.onload = function() {
+            renderCarousel();
+            updateIndicators();
+            setupTouchGestures();
+        };
+
+        // Render Carousel Cards (Portrait A4 proportions)
+        function renderCarousel() {
+            const track = document.getElementById('carousel-track');
+            if (!track) return;
+            track.innerHTML = '';
+
+            menuItems.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = `menu-card absolute w-[82%] max-w-[300px] aspect-a4 rounded-2xl overflow-hidden glass shadow-2xl flex flex-col justify-between p-3 border border-white/30 cursor-pointer select-none`;
+                
+                // Calculate relative position to active card
+                const diff = index - currentIndex;
+                
+                if (diff === 0) {
+                    // Active Center Card
+                    card.style.transform = 'translateX(0) scale(1)';
+                    card.style.opacity = '1';
+                    card.style.zIndex = '30';
+                    card.classList.add('ring-4', 'ring-amber-400/80');
+                } else if (diff === -1 || (currentIndex === 0 && index === menuItems.length - 1)) {
+                    // Left Card
+                    card.style.transform = 'translateX(-65%) scale(0.85)';
+                    card.style.opacity = '0.5';
+                    card.style.zIndex = '10';
+                    card.style.filter = 'blur(1px)';
+                } else if (diff === 1 || (currentIndex === menuItems.length - 1 && index === 0)) {
+                    // Right Card
+                    card.style.transform = 'translateX(65%) scale(0.85)';
+                    card.style.opacity = '0.5';
+                    card.style.zIndex = '10';
+                    card.style.filter = 'blur(1px)';
+                } else {
+                    // Hidden Cards
+                    card.style.transform = diff < 0 ? 'translateX(-120%) scale(0.7)' : 'translateX(120%) scale(0.7)';
+                    card.style.opacity = '0';
+                    card.style.zIndex = '0';
+                    card.style.pointerEvents = 'none';
+                }
+
+                card.innerHTML = `
+                    <div class="relative w-full h-full rounded-xl overflow-hidden bg-black/20 flex items-center justify-center">
+                        <img src="${item.image}" alt="Dish #${item.id}" 
+                             class="w-full h-full object-cover rounded-xl"
+                             onerror="this.onerror=null; this.src='https://placehold.co/400x565/8B0000/FFF?text=NyotaNdogo+Dish+${item.id}';">
+                        
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20"></div>
+                        
+                        <!-- Top Tag -->
+                        <div class="absolute top-3 left-3 bg-stone-900/80 backdrop-blur-md text-amber-300 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider border border-white/10">
+                            Dish #${item.id}
+                        </div>
+
+                        <!-- Bottom Minimalist Overlay -->
+                        <div class="absolute bottom-3 left-3 right-3 text-left">
+                            <span class="text-xs font-semibold text-amber-200 block">Freshly Prepared</span>
+                            <h4 class="text-lg font-black text-white leading-tight">Chef's Choice #${item.id}</h4>
+                        </div>
+                    </div>
+                `;
+
+                card.onclick = () => {
+                    if (index !== currentIndex) {
+                        currentIndex = index;
+                        renderCarousel();
+                        updateIndicators();
+                    }
+                };
+
+                track.appendChild(card);
+            });
+        }
+
+        function nextSlide() {
+            currentIndex = (currentIndex + 1) % menuItems.length;
+            renderCarousel();
+            updateIndicators();
+        }
+
+        function prevSlide() {
+            currentIndex = (currentIndex - 1 + menuItems.length) % menuItems.length;
+            renderCarousel();
+            updateIndicators();
+        }
+
+        function updateIndicators() {
+            const currentEl = document.getElementById('current-index');
+            const totalEl = document.getElementById('total-count');
+            if (currentEl) currentEl.innerText = currentIndex + 1;
+            if (totalEl) totalEl.innerText = menuItems.length;
+        }
+
+        // Touch Swipe Gestures
+        function setupTouchGestures() {
+            const track = document.getElementById('carousel-track');
+            if (!track) return;
+
+            track.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+
+            track.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, { passive: true });
+        }
+
+        function handleSwipe() {
+            if (touchStartX - touchEndX > 40) {
+                nextSlide();
+            } else if (touchEndX - touchStartX > 40) {
+                prevSlide();
+            }
+        }
+
+        // Cart & Order Logic
+        function addCurrentToCart() {
+            const currentItem = menuItems[currentIndex];
+            const existing = cart.find(i => i.id === currentItem.id);
+            
+            if (existing) {
+                existing.qty += 1;
+            } else {
+                cart.push({ ...currentItem, qty: 1 });
+            }
+
+            updateCartBadge();
+            showToast(`Added Dish #${currentItem.id} to Order`);
+        }
+
+        function updateCartBadge() {
+            const badge = document.getElementById('cart-count');
+            const totalItems = cart.reduce((acc, item) => acc + item.qty, 0);
+            
+            if (badge) {
+                if (totalItems > 0) {
+                    badge.innerText = totalItems;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            }
+        }
+
+        function toggleCartModal() {
+            const modal = document.getElementById('cart-modal');
+            const isHidden = modal.classList.contains('opacity-0');
+
+            if (isHidden) {
+                renderCartItems();
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+            } else {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+            }
+        }
+
+        function renderCartItems() {
+            const container = document.getElementById('cart-items-container');
+            if (!container) return;
+
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-white/50">
+                        <i class="fa-solid fa-utensils text-3xl mb-2"></i>
+                        <p class="text-sm">Your advance order is currently empty.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = cart.map(item => `
+                <div class="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/10">
+                    <div class="flex items-center gap-3">
+                        <img src="${item.image}" class="w-12 h-12 object-cover rounded-lg" onerror="this.src='https://placehold.co/100x100/8B0000/FFF?text=${item.id}'">
+                        <div>
+                            <p class="font-bold text-white text-sm">Dish #${item.id}</p>
+                            <span class="text-xs text-amber-300">Ready for Advance Order</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="updateQty(${item.id}, -1)" class="w-7 h-7 rounded-lg bg-white/10 text-white font-bold flex items-center justify-center hover:bg-white/20">-</button>
+                        <span class="text-sm font-bold w-5 text-center">${item.qty}</span>
+                        <button onclick="updateQty(${item.id}, 1)" class="w-7 h-7 rounded-lg bg-white/10 text-white font-bold flex items-center justify-center hover:bg-white/20">+</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateQty(id, change) {
+            const item = cart.find(i => i.id === id);
+            if (item) {
+                item.qty += change;
+                if (item.qty <= 0) {
+                    cart = cart.filter(i => i.id !== id);
+                }
+            }
+            updateCartBadge();
+            renderCartItems();
+        }
+
+        function sendWhatsAppOrder() {
+            if (cart.length === 0) {
+                showToast("Please add items before placing order!");
+                return;
+            }
+
+            const phone = "254707269581";
+            const nameInput = document.getElementById('cust-name');
+            const noteInput = document.getElementById('cust-note');
+            
+            const name = nameInput ? nameInput.value.trim() : "";
+            const note = noteInput ? noteInput.value.trim() : "";
+
+            let message = `*✨ NEW ADVANCE ORDER - NYOTA NDOGO CAFE ✨*\n\n`;
+            if (name) message += `*Customer Name:* ${name}\n`;
+            message += `---------------------------------\n`;
+            message += `*Selected Items:*\n`;
+
+            cart.forEach(item => {
+                message += `• Dish #${item.id} (x${item.qty})\n`;
+            });
+
+            if (note) {
+                message += `---------------------------------\n`;
+                message += `*Note:* ${note}\n`;
+            }
+
+            message += `---------------------------------\n`;
+            message += `Please confirm availability and wait time. Thank you!`;
+
+            const encodedMessage = encodeURIComponent(message);
+            window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank');
+        }
+
+        // Navigation Drawer Toggle
+        function toggleDrawer() {
+            const drawer = document.getElementById('drawer');
+            const overlay = document.getElementById('drawer-overlay');
+            
+            if (drawer && overlay) {
+                drawer.classList.toggle('translate-x-full');
+                overlay.classList.toggle('opacity-0');
+                overlay.classList.toggle('pointer-events-none');
+            }
+        }
+
+        // Info Modal Toggle
+        function showInfoModal(type) {
+            const modal = document.getElementById('info-modal');
+            const content = document.getElementById('info-content');
+
+            if (!modal || !content) return;
+
+            if (type === 'about') {
+                content.innerHTML = `
+                    <div class="w-12 h-12 rounded-full bg-amber-400 text-red-950 flex items-center justify-center mx-auto text-2xl font-bold mb-3">✨</div>
+                    <h3 class="text-xl font-black text-amber-300 mb-2">About NyotaNdogo</h3>
+                    <p class="text-sm text-white/80 leading-relaxed">NyotaNdogo Cafe offers fresh, rich, and flavorful local delicacies cooked to perfection. Browse our vibrant visual menu and order ahead for seamless service!</p>
+                `;
+            } else if (type === 'contact') {
+                content.innerHTML = `
+                    <div class="w-12 h-12 rounded-full bg-amber-400 text-red-950 flex items-center justify-center mx-auto text-2xl font-bold mb-3">
+                        <i class="fa-solid fa-phone"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-amber-300 mb-2">Contact Us</h3>
+                    <p class="text-sm text-white/90 font-semibold mb-1">WhatsApp / Call:</p>
+                    <p class="text-base text-amber-200 font-bold mb-3">+254 707 269581</p>
+                    <p class="text-xs text-white/60">Open Daily: 7:00 AM - 10:00 PM</p>
+                `;
+            }
+
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function closeInfoModal() {
+            const modal = document.getElementById('info-modal');
+            if (modal) modal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        // Toast Feedback helper
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            const msgEl = document.getElementById('toast-msg');
+            if (!toast || !msgEl) return;
+
+            msgEl.innerText = msg;
+            
+            toast.classList.remove('-translate-y-10', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('-translate-y-10', 'opacity-0');
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
